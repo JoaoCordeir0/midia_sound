@@ -12,8 +12,8 @@ const App = () => {
         <NavigationContainer theme={DarkTheme}>            
             <Stack.Navigator initialRouteName='Mode'>
                 <Stack.Screen name='Mode' component={SelectMode} />
-                <Stack.Screen name='Local' component={LocalAudio} options={{ headerShown: false }} />
-                <Stack.Screen name='Bluetooth' component={BluetoothAudio} options={{ headerShown: false }} />
+                <Stack.Screen name='Local' component={LocalAudio} options={{ headerShown: true }} />
+                <Stack.Screen name='Bluetooth' component={BluetoothAudio} options={{ headerShown: true }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -1,55 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, PermissionsAndroid, Platform } from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
+import React, { useState, useEffect } from 'react'
+import { View, Text, Button, FlatList, PermissionsAndroid, Platform, Alert } from 'react-native'
+import { BleManager } from 'react-native-ble-manager'
 
 const BluetoothAudio = () => {
-    let bleManager = new BleManager()
-    const [devices, setDevices] = useState([]);
-    const [selectedDevice, setSelectedDevice] = useState(null);
+    const [devices, setDevices] = useState([])
+    const [selectedDevice, setSelectedDevice] = useState(null)
 
-    // useEffect(() => {
-    //     requestPermissions();
-    //     return () => {
-    //         // bleManager.destroy();
-    //     };
-    // }, []);
+    const requestPermissions = async () => {
+        try {
+            if (Platform.OS === 'android') {
+                await PermissionsAndroid.requestMultiple([
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+                ])
+            }
+        } catch (err) {
+            console.warn(err)
+        }
+    }
 
-    // const requestPermissions = async () => {
-    //     if (Platform.OS === 'android') {
-    //         await PermissionsAndroid.requestMultiple([
-    //             PermissionsAndroid.PERMISSIONS.BLUETOOTH,
-    //             PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADMIN,
-    //             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    //         ]);
-    //     }
-    // };
+    const bluetoothStart = async () => {             
+        BleManager.start({ showAlert: true }).then(() => {
+            console.log('BleManager initialized');
+            handleGetConnectedDevices();
+        });
+    }
 
-    // const scanDevices = () => {
-    //     // bleManager.startDeviceScan(null, null, (error, device) => {
-    //     //     if (error) {
-    //     //         console.error(error);
-    //     //         return;
-    //     //     }
-    //     //     if (device && !devices.find(d => d.id === device.id)) {
-    //     //         setDevices(prevDevices => [...prevDevices, device]);
-    //     //     }
-    //     // });
-    // };
+    const handleGetConnectedDevices = () => {
+        BleManager.getConnectedPeripherals([]).then(results => {
+            if (results.length === 0) {
+                Alert.alert('Bluetooth error', 'Nenhum dispositivo pareado', [                    
+                    { text: 'OK', onPress: () => console.log('OK Pressed') },
+                ]);
+            } else {
+                for (let i = 0; i < results.length; i++) {
+                    let peripheral = results[i];
+                    peripheral.connected = true;
+                    peripherals.set(peripheral.id, peripheral);
+                    setDevices(Array.from(peripherals.values()));
+                }
+            }
+        });
+    };
 
-    // const connectToDevice = async (device) => {
-    //     try {
-    //         const connectedDevice = await bleManager.connectToDevice(device.id);
-    //         setSelectedDevice(connectedDevice);
-    //         // Aqui, configure as características BLE para receber dados de áudio
-    //         // Normalmente, você precisará de características específicas para áudio BLE
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
-
-    // const renderDevice = ({ item }) => (
-    //     <Button title={`Conectar a ${item.name}`} onPress={() => connectToDevice(item)} />
-    // );
+    useEffect(() => {
+        requestPermissions()
+        bluetoothStart()    
+        return () => {
+            // bleManager.destroy()
+        }
+    }, [])
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -61,7 +62,6 @@ const BluetoothAudio = () => {
             />
             {selectedDevice && <Text>Conectado a: {selectedDevice.name}</Text>} */}
         </View>
-    );
-};
-
+    )
+}
 export default BluetoothAudio;

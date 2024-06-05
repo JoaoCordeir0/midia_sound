@@ -8,6 +8,17 @@ const Styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'black'
+    }, 
+    btn: {
+        backgroundColor: 'blue',
+        padding: 10,
+        borderRadius: 10,
+        margin: 10,
+    },
+    btnText: {
+        color: 'white',
+        fontWeight: '800',
+        fontSize: 30,        
     },
     controlsArea: {
         marginTop: 150,

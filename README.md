@@ -1,2 +1,2 @@
-# midia_sound
+# Pulse music
 Player de musica

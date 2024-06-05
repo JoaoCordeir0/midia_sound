@@ -1,146 +1,67 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
-import { Audio, Video } from 'expo-av'
-import Slider from '@react-native-community/slider'
-import Entypo from '@expo/vector-icons/Entypo'
-import Styles from '../hooks/Style'
-import { pauseVideo, unPauseVideo } from '../hooks/Video'
-import { formatAudioName } from '../hooks/Audio'
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, FlatList, PermissionsAndroid, Platform } from 'react-native';
+import { BleManager } from 'react-native-ble-plx';
 
 const BluetoothAudio = () => {
-    const videoRef = useRef(null)
-    const [sound, setSound] = useState(null)
-    const [isAudioPlaying, setIsAudioPlaying] = useState(false)
-    const [volume, setVolume] = useState(0.5)
-    const [playerStatus, setPlayerStatus] = useState(false)
-    const [currentTrack, setCurrentTrack] = useState(0)
-    const [currentTrackName, setCurrentTrackName] = useState('')
-    const [currentVideo, setCurrentVideo] = useState('1.mp4')
+    let bleManager = new BleManager()
+    const [devices, setDevices] = useState([]);
+    const [selectedDevice, setSelectedDevice] = useState(null);
 
-    const playlist = [
-        { uri: 'assets/musics/AgroPlay Verão - Nosso Quadro.mp3' },
-        { uri: 'assets/musics/Zé Neto e Cristiano - BATERIA ACABOU.mp3' },
-        { uri: 'assets/musics/Piração - Kaka e Pedrinho.mp3' }
-    ]
+    // useEffect(() => {
+    //     requestPermissions();
+    //     return () => {
+    //         // bleManager.destroy();
+    //     };
+    // }, []);
 
-    const playSound = async () => {
-        if (currentTrack < playlist.length) {
-            if (sound) {
-                await sound.unloadAsync()
-            }
-            const { sound: newSound } = await Audio.Sound.createAsync(
-                playlist[currentTrack],
-                { shouldPlay: true }
-            )            
-            newSound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate)
-            setSound(newSound)
-            
-            setCurrentTrackName(formatAudioName(playlist[currentTrack].uri))
-            setIsAudioPlaying(true)
-            setPlayerStatus(true)     
-            unPauseVideo(videoRef)       
-        }        
-    }
-   
-    const onPlaybackStatusUpdate = (status) => {
-        if (status.didJustFinish && !status.isLooping) {
-            setIsAudioPlaying(false)
-            playNextTrack()
-        }
-    }
+    // const requestPermissions = async () => {
+    //     if (Platform.OS === 'android') {
+    //         await PermissionsAndroid.requestMultiple([
+    //             PermissionsAndroid.PERMISSIONS.BLUETOOTH,
+    //             PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADMIN,
+    //             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    //         ]);
+    //     }
+    // };
 
-    const playNextTrack = () => {
-        setCurrentTrack((prevTrack) => (prevTrack + 1) % playlist.length)
-    }
+    // const scanDevices = () => {
+    //     // bleManager.startDeviceScan(null, null, (error, device) => {
+    //     //     if (error) {
+    //     //         console.error(error);
+    //     //         return;
+    //     //     }
+    //     //     if (device && !devices.find(d => d.id === device.id)) {
+    //     //         setDevices(prevDevices => [...prevDevices, device]);
+    //     //     }
+    //     // });
+    // };
 
-    const playPreviousTrack = () => {
-        setCurrentTrack((prevTrack) => (prevTrack - 1 + playlist.length) % playlist.length)
-    }
+    // const connectToDevice = async (device) => {
+    //     try {
+    //         const connectedDevice = await bleManager.connectToDevice(device.id);
+    //         setSelectedDevice(connectedDevice);
+    //         // Aqui, configure as características BLE para receber dados de áudio
+    //         // Normalmente, você precisará de características específicas para áudio BLE
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // };
 
-    const toggleSound = async () => {
-        if (sound) {
-            if (isAudioPlaying) {
-                await sound.pauseAsync()
-                setIsAudioPlaying(false)
-                pauseVideo(videoRef)
-            } else {
-                await sound.playAsync()
-                setIsAudioPlaying(true)
-                unPauseVideo(videoRef)
-            }
-        }
-    }
-
-    const changeVolume = async (value) => {
-        setVolume(value)
-        if (sound) {
-            await sound.setVolumeAsync(value)
-        }
-    }
-
-    useEffect(() => {
-        playSound()
-        return sound
-            ? () => {
-                sound.unloadAsync()
-            }
-            : undefined
-    }, [currentTrack])
+    // const renderDevice = ({ item }) => (
+    //     <Button title={`Conectar a ${item.name}`} onPress={() => connectToDevice(item)} />
+    // );
 
     return (
-        <View style={Styles.container}>
-            <Video
-                ref={videoRef}
-                source={{ uri: 'assets/templates/' + currentVideo }}
-                isMuted={true}
-                shouldPlay={false}
-                resizeMode="cover"
-                isLooping
-                style={Styles.backgroundVideo}
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <Button title="Scanear Dispositivos" />
+            {/* <FlatList
+                data={devices}
+                keyExtractor={item => item.id}
+                renderItem={renderDevice}
             />
-
-            <View style={Styles.controlsArea}>
-                <Text style={Styles.trackText}>
-                    {currentTrackName}
-                </Text>
-
-                <View style={Styles.controls}>
-                    <TouchableOpacity title="Música anterior" onPress={playPreviousTrack}>
-                        <Entypo name="controller-jump-to-start" size={34} color="white" style={Styles.btnControls} />
-                    </TouchableOpacity>
-                    {
-                        playerStatus ?
-                            <TouchableOpacity title="Pausar ou retomar Música" onPress={toggleSound}>
-                                {
-                                    isAudioPlaying ?
-                                        <Entypo name="controller-paus" size={34} color="white" style={Styles.btnControls} />
-                                        :
-                                        <Entypo name="controller-play" size={34} color="white" style={Styles.btnControls} />
-                                }
-                            </TouchableOpacity>
-                            :
-                            <TouchableOpacity onPress={playSound}>
-                                <Entypo name="controller-play" size={34} color="white" style={Styles.btnControls} />
-                            </TouchableOpacity>
-                    }
-                    <TouchableOpacity title="Próxima música" onPress={playNextTrack}>
-                        <Entypo name="controller-next" size={34} color="white" style={Styles.btnControls} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <Slider
-                style={Styles.slider}
-                minimumValue={0}
-                maximumValue={1}
-                value={volume}
-                onValueChange={changeVolume}
-                minimumTrackTintColor="#1EB1FC"
-                maximumTrackTintColor="white"
-                thumbTintColor="white"
-            />
+            {selectedDevice && <Text>Conectado a: {selectedDevice.name}</Text>} */}
         </View>
-    )
-}
+    );
+};
 
-export default BluetoothAudio
+export default BluetoothAudio;

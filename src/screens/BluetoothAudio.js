@@ -29,16 +29,24 @@ const BluetoothAudio = () => {
         }
     }
 
-    const getDeviceInfo = async () => {
-        console.log(await NativeModules.AudioModule.getCurrentAudio())
+    const getDeviceInfo = async (address) => {
+        NativeModules.BatteryModule.getBatteryLevel(address, (error, batteryLevel) => {
+            if (error) {
+                console.error(error);
+                return;
+            }
+            console.log('Battery Level:', batteryLevel);
+        });
     }
 
     const onConnect = async (item, index) => {
         try {
             const result = await NativeModules.BluetoothModule.connectToA2DP(item.address)
             setCurrentDevice(item)
-            getDeviceInfo()
+            // Alert.alert('Status', 'Conexão OK com o dispositivo: ' + item.address)
+            getDeviceInfo(item.address)
         } catch (error) {
+            Alert.alert('Status', 'Conexão falhou com o dispositivo: ' + item.address)
             console.error(error)
         }
     }
@@ -65,17 +73,6 @@ const BluetoothAudio = () => {
         })        
     }, [pairedDevices, connectedDevices])
 
-    const renderDevices = ({ item, index }) => {
-        return (
-            <View style={Styles.devices}>
-                <Text style={Styles.colorWhite}>{item.name} - {item.address}</Text>
-                <TouchableOpacity onPress={() => onConnect(item, index)} style={Styles.btnConnect}>
-                    <Text>Utilizar</Text>
-                </TouchableOpacity>
-            </View>
-        )
-    }
-
     const ShowDevices = (props) => {
         if (props.devices) {
             return (           
@@ -83,19 +80,31 @@ const BluetoothAudio = () => {
                     <Text style={Styles.colorWhite}>{props.title}</Text>
                     <FlatList scrollEnabled={false} data={props.devices}
                         keyExtractor={(item, index) => index.toString()}
-                        renderItem={renderDevices}
+                        renderItem={({item, index}) => {
+                            return (
+                                <View style={Styles.devices}>
+                                    <Text style={Styles.colorWhite}>{item.name} - {item.address}</Text>
+                                    <TouchableOpacity onPress={() => onConnect(item, index)} style={Styles.btnConnect}>
+                                        <Text>Utilizar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        }}
                     />
                 </View>       
             )      
         }         
-    }
+    }    
 
     return (
         <View style={Styles.container}>
+            <TouchableOpacity onPress={() => getDevices()} style={Styles.btn2}>
+                <Text> Recarregar</Text>
+            </TouchableOpacity>
             <ScrollView style={{ width: '70%' }}>
                 <ShowDevices title={'Dispositivo(s) conectado(s)'} devices={connectedDevices} /> 
                 <ShowDevices title={'Pareados anteriormente:'} devices={pairedDevices} />                    
-            </ScrollView>   
+            </ScrollView>                           
         </View>
     )
 }

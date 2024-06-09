@@ -12,6 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.pulse_music.modules.BluetoothPackage
 import com.pulse_music.modules.AudioPackage
+import com.pulse_music.modules.BatteryPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -23,6 +24,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               add(BluetoothPackage())
               add(AudioPackage())
+              add(BatteryPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

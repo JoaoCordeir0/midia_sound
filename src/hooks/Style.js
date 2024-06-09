@@ -15,6 +15,12 @@ const Styles = StyleSheet.create({
         borderRadius: 10,
         margin: 10,
     },
+    btn2: {
+        backgroundColor: 'green',
+        padding: 10,
+        borderRadius: 10,
+        margin: 10,
+    },
     btnText: {
         color: 'white',
         fontWeight: '800',

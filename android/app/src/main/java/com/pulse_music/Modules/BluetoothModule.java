@@ -86,6 +86,23 @@ public class BluetoothModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getBondedDevices(Promise promise) {
+        try {
+            Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+            WritableArray deviceList = Arguments.createArray();
+            for (BluetoothDevice device : bondedDevices) {
+                WritableMap deviceMap = Arguments.createMap();
+                deviceMap.putString("name", device.getName());
+                deviceMap.putString("address", device.getAddress());
+                deviceList.pushMap(deviceMap);
+            }
+            promise.resolve(deviceList);
+        } catch (Exception e) {
+            promise.reject("Error", e);
+        }
+    }
+
+    @ReactMethod
     public void connectToA2DP(String deviceAddress, Promise promise) {
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(deviceAddress);
         if (device != null && bluetoothA2dp != null) {

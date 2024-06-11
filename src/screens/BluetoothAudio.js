@@ -41,9 +41,9 @@ const BluetoothAudio = () => {
 
     const onConnect = async (item, index) => {
         try {
-            const result = await NativeModules.BluetoothModule.connectToA2DP(item.address)
+            await NativeModules.BluetoothModule.connectToA2DP(item.address)
             setCurrentDevice(item)
-            // Alert.alert('Status', 'Conexão OK com o dispositivo: ' + item.address)
+            Alert.alert('Status', 'Conexão OK com o dispositivo: ' + item.address)
             getDeviceInfo(item.address)
         } catch (error) {
             Alert.alert('Status', 'Conexão falhou com o dispositivo: ' + item.address)
